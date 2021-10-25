@@ -15,4 +15,7 @@ DEVELHELP ?= 1
 # Change this to 0 show compiler invocation lines by default:
 QUIET ?= 1
 
+
+FEATURES_REQUIRED += periph_gpio_irq
+
 include $(RIOTBASE)/Makefile.include
