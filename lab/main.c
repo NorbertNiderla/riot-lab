@@ -47,63 +47,25 @@ static void user_button_callback(void *arg){
     LED2_TOGGLE;
     msg_t msg;
     msg.type = LED_BLINKING_TOGGLE;
-<<<<<<< HEAD
     msg_send(&msg, *(kernel_pid_t*)arg);
-=======
-    DEBUG("main: arg: %d, arg_address: %p\n", *(int16_t*)arg, arg);
-    kernel_pid_t pid = *(kernel_pid_t*)arg;
-    msg_send(&msg, pid);
->>>>>>> lab
 }
 
 char red_thread_stack[THREAD_STACKSIZE_MAIN];
 char green_thread_stack[THREAD_STACKSIZE_MAIN];
-<<<<<<< HEAD
 static kernel_pid_t red_pid;
 static kernel_pid_t green_pid;
-=======
->>>>>>> lab
 
 void *thread_blinking_red(void* arg){
     (void) arg;
 
     DEBUG("thread_blinking_red: started\n");
-<<<<<<< HEAD
-=======
-    xtimer_ticks32_t last_wakeup = xtimer_now();
->>>>>>> lab
     LED3_ON;
     msg_t msg;
     while(1){
         msg_receive(&msg);
-<<<<<<< HEAD
         LED3_TOGGLE;
     }
     return NULL;
-=======
-        while(1){
-            LED3_TOGGLE;
-            xtimer_periodic_wakeup(&last_wakeup, RED_PERIOD);
-            if(msg_try_receive(&msg)) break;
-        }
-    }
-    return NULL;
-}
-
-void *thread_blinking_green(void* arg){
-    (void) arg;
-    
-    DEBUG("thread_blinking_green: started\n");
-    xtimer_ticks32_t last_wakeup = xtimer_now();
-    LED1_ON;
-    
-    while(1){
-        LED1_TOGGLE;
-        xtimer_periodic_wakeup(&last_wakeup, GREEN_PERIOD);
-    }
-
-    return NULL;
->>>>>>> lab
 }
 
 void *thread_blinking_green(void* arg){
@@ -123,7 +85,6 @@ void *thread_blinking_green(void* arg){
 
 int main(void)
 {
-<<<<<<< HEAD
     red_pid = thread_create(red_thread_stack, sizeof(red_thread_stack),
                             THREAD_PRIORITY_MAIN - 2, THREAD_CREATE_STACKTEST,
                             thread_blinking_red, NULL, "red");
@@ -136,21 +97,6 @@ int main(void)
 
     LED2_OFF;
     if (gpio_init_int(BTN_B1_PIN, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&red_pid) < 0) {
-=======
-    kernel_pid_t red_blinking_pid = thread_create(red_thread_stack, sizeof(red_thread_stack),
-                            THREAD_PRIORITY_MAIN - 2, THREAD_CREATE_STACKTEST,
-                            thread_blinking_red, NULL, "red");
-    kernel_pid_t green_blinking_pid = thread_create(green_thread_stack, sizeof(green_thread_stack),
-                            THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-                            thread_blinking_green, NULL, "green");
-
-    DEBUG("main: red_pid: %d, red_pid_address: %p\n", red_blinking_pid, &red_blinking_pid);
-    DEBUG("main: Red thread created: %d\n", red_blinking_pid);
-    DEBUG("main: Green thread created: %d\n", green_blinking_pid);
-
-    LED2_OFF;
-    if (gpio_init_int(BTN_B1_PIN, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&red_blinking_pid) < 0) {
->>>>>>> lab
         puts("[FAILED] init BTN1!");
         return 1;
     }
