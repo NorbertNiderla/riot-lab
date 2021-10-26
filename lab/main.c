@@ -40,11 +40,10 @@
 
 typedef enum {
     LED_BLINKING_TOGGLE = 0,
-} msg_led_value;
+} msg_led_type;
 
 static void user_button_callback(void *arg){
     (void) arg;
-    LED2_TOGGLE;
     msg_t msg;
     msg.type = LED_BLINKING_TOGGLE;
     msg_send(&msg, *(kernel_pid_t*)arg);
@@ -57,13 +56,28 @@ static kernel_pid_t green_pid;
 
 void *thread_blinking_red(void* arg){
     (void) arg;
-
     DEBUG("thread_blinking_red: started\n");
-    LED3_ON;
+    xtimer_ticks32_t time;
+    unsigned counter = 0;
+    LED3_OFF;
     msg_t msg;
     while(1){
         msg_receive(&msg);
-        LED3_TOGGLE;
+        if(xtimer_diff(xtimer_now(), time).ticks32 < 1000000){
+            counter++;
+            time = xtimer_now();
+            DEBUG("cnt: %d\n", counter);
+        } else {
+            xtimer_ticks32_t last_wakeup = xtimer_now();
+            while(counter != 0){
+                DEBUG("cnt blinking: %d\n", counter);
+                xtimer_periodic_wakeup(&last_wakeup, 500000);
+                LED3_TOGGLE;
+                xtimer_periodic_wakeup(&last_wakeup, 500000);
+                LED3_TOGGLE;
+                counter--;
+            }
+        }
     }
     return NULL;
 }
@@ -96,7 +110,7 @@ int main(void)
     DEBUG("main: Green thread created: %d\n", green_pid);
 
     LED2_OFF;
-    if (gpio_init_int(BTN_B1_PIN, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&red_pid) < 0) {
+    if (gpio_init_int(BTN_B1_PIN, GPIO_IN_PU, GPIO_FALLING, user_button_callback, (void*)&red_pid) < 0) {
         puts("[FAILED] init BTN1!");
         return 1;
     }
