@@ -98,6 +98,13 @@ void *thread_blinking_red(void* arg){
     return NULL;
 }
 
+/* TODO: */
+/* green led thread */
+/* user button callback drukowanie ile czasu minęło */
+/* globalna zmienna drukowana w pierwszym wątku */
+/* red thread receiving message */
+/* jakos rozdzielic mainy tak, żeby kolejne częsci mozna było zaczynać niezależnie */
+
 int main(void)
 {
     kernel_pid_t red_pid = thread_create(red_thread_stack, sizeof(red_thread_stack),
