@@ -20,7 +20,7 @@
 
 #include <stdio.h>
 
-#include "board.h" /* board specific definitions */
+#include "board.h"       /* board specific definitions */
 #include "periph/gpio.h" /* gpio api */
 #include "stm32l072xx.h" /* mcu specific definitions */
 
@@ -35,8 +35,21 @@
 #include "debug.h"
 #endif
 
-#define RED_PERIOD         (250000)
-#define GREEN_PERIOD     (454321)
+/* button manipulation macro */
+#define USER_BUTTON       (BTN_B1_PIN)
+/* led manipulation macros */
+#define RED_LED_OFF       (LED3_OFF)
+#define RED_LED_ON        (LED3_ON)
+#define RED_LED_TOGGLE    (LED3_TOGGLE)
+#define BLUE_LED_OFF      (LED2_OFF)
+#define BLUE_LED_ON       (LED2_ON)
+#define BLUE_LED_TOGGLE   (LED2_TOGGLE)
+#define GREEN_LED_OFF     (LED1_OFF)
+#define GREEN_LED_ON      (LED1_ON)
+#define GREEN_LED_TOGGLE  (LED1_TOGGLE)
+
+#define RED_LED_PERIOD         (250000)
+#define GREEN_LED_PERIOD     (454321)
 
 typedef enum {
     LED_BLINKING_TOGGLE = 0,
@@ -46,35 +59,38 @@ static void user_button_callback(void *arg){
     (void) arg;
     msg_t msg;
     msg.type = LED_BLINKING_TOGGLE;
-    msg_send(&msg, *(kernel_pid_t*)arg);
+    static unsigned button_pressed = 0;
+    static xtimer_ticks32_t start;
+    xtimer_ticks32_t stop;
+
+    if(button_pressed == 0){
+        start = xtimer_now();
+        button_pressed = 1;
+    } else {
+        stop = xtimer_now();
+        button_pressed = 0;
+        msg.content.value = xtimer_diff(stop, start).ticks32 >> 20;
+        msg_send(&msg, *(kernel_pid_t*)arg);
+    }
 }
 
 char red_thread_stack[THREAD_STACKSIZE_MAIN];
-char green_thread_stack[THREAD_STACKSIZE_MAIN];
-static kernel_pid_t red_pid;
-static kernel_pid_t green_pid;
 
 void *thread_blinking_red(void* arg){
-    (void) arg;
-    DEBUG("thread_blinking_red: started\n");
-    xtimer_ticks32_t time;
-    unsigned counter = 0;
-    LED3_OFF;
+    (void)arg;
     msg_t msg;
+    unsigned counter;
+    xtimer_ticks32_t last_wakeup;
     while(1){
         msg_receive(&msg);
-        if(xtimer_diff(xtimer_now(), time).ticks32 < 1000000){
-            counter++;
-            time = xtimer_now();
-            DEBUG("cnt: %d\n", counter);
-        } else {
-            xtimer_ticks32_t last_wakeup = xtimer_now();
-            while(counter != 0){
-                DEBUG("cnt blinking: %d\n", counter);
-                xtimer_periodic_wakeup(&last_wakeup, 500000);
-                LED3_TOGGLE;
-                xtimer_periodic_wakeup(&last_wakeup, 500000);
-                LED3_TOGGLE;
+        if(msg.type == LED_BLINKING_TOGGLE){
+            counter = msg.content.value;
+            last_wakeup = xtimer_now();
+            while(counter!=0){
+                RED_LED_TOGGLE;
+                xtimer_periodic_wakeup(&last_wakeup, RED_LED_PERIOD);
+                RED_LED_TOGGLE;
+                xtimer_periodic_wakeup(&last_wakeup, RED_LED_PERIOD);
                 counter--;
             }
         }
@@ -82,38 +98,21 @@ void *thread_blinking_red(void* arg){
     return NULL;
 }
 
-void *thread_blinking_green(void* arg){
-    (void) arg;
-    
-    DEBUG("thread_blinking_green: started\n");
-    xtimer_ticks32_t last_wakeup = xtimer_now();
-    LED1_ON;
-    
-    while(1){
-        LED1_TOGGLE;
-        xtimer_periodic_wakeup(&last_wakeup, GREEN_PERIOD);
-    }
-
-    return NULL;
-}
-
 int main(void)
 {
-    red_pid = thread_create(red_thread_stack, sizeof(red_thread_stack),
+    kernel_pid_t red_pid = thread_create(red_thread_stack, sizeof(red_thread_stack),
                             THREAD_PRIORITY_MAIN - 2, THREAD_CREATE_STACKTEST,
                             thread_blinking_red, NULL, "red");
-    green_pid = thread_create(green_thread_stack, sizeof(green_thread_stack),
-                            THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-                            thread_blinking_green, NULL, "green");
 
-    DEBUG("main: Red thread created: %d\n", red_pid);
-    DEBUG("main: Green thread created: %d\n", green_pid);
-
-    LED2_OFF;
-    if (gpio_init_int(BTN_B1_PIN, GPIO_IN_PU, GPIO_FALLING, user_button_callback, (void*)&red_pid) < 0) {
-        puts("[FAILED] init BTN1!");
-        return 1;
+    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&red_pid);
+     
+    xtimer_ticks32_t last_wakeup = xtimer_now();
+    GREEN_LED_ON;
+    while(1){
+        GREEN_LED_TOGGLE;
+        xtimer_periodic_wakeup(&last_wakeup, GREEN_LED_PERIOD);
     }
-    
+
+    /*if code get here, red_pid won't be passed to user_button_callback */
     return 0;
 }
