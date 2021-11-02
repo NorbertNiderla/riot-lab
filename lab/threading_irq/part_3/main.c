@@ -28,7 +28,6 @@
 #include "thread.h"
 #include "msg.h"
 #include "xtimer.h"
-/***/
 
 #define ENABLE_DEBUG    (1)
 #if ENABLE_DEBUG
@@ -37,6 +36,7 @@
 
 /* button manipulation macro */
 #define USER_BUTTON       (BTN_B1_PIN)
+
 /* led manipulation macros */
 #define RED_LED_OFF       (LED3_OFF)
 #define RED_LED_ON        (LED3_ON)
@@ -48,17 +48,16 @@
 #define GREEN_LED_ON      (LED1_ON)
 #define GREEN_LED_TOGGLE  (LED1_TOGGLE)
 
+/* leds period times (can be changed) */
 #define RED_LED_PERIOD         (250000)
-#define GREEN_LED_PERIOD     (454321)
+#define GREEN_LED_PERIOD     (250000)
+#define BLUE_LED_PERIOD     (250000)
 
-typedef enum {
-    LED_BLINKING_TOGGLE = 0,
-} msg_led_type;
+/* tutaj zadeklaruj zmienną globalną, ktora bedzie przechowywać czas
+    przez który ostatnio przycisk był wciśnięty */
 
 static void user_button_callback(void *arg){
     (void) arg;
-    msg_t msg;
-    msg.type = LED_BLINKING_TOGGLE;
     static unsigned button_pressed = 0;
     static xtimer_ticks32_t start;
     xtimer_ticks32_t stop;
@@ -68,58 +67,31 @@ static void user_button_callback(void *arg){
         button_pressed = 1;
     } else {
         stop = xtimer_now();
+        DEBUG("User button being pressed down time[us]: %d\n", xtimer_diff(stop, start).ticks32);
         button_pressed = 0;
-        msg.content.value = xtimer_diff(stop, start).ticks32 >> 20;
-        msg_send(&msg, *(kernel_pid_t*)arg);
     }
 }
 
-char red_thread_stack[THREAD_STACKSIZE_MAIN];
+char stack_thread_blinking_green[THREAD_STACKSIZE_MAIN];
 
-void *thread_blinking_red(void* arg){
-    (void)arg;
-    msg_t msg;
-    unsigned counter;
-    xtimer_ticks32_t last_wakeup;
-    while(1){
-        msg_receive(&msg);
-        if(msg.type == LED_BLINKING_TOGGLE){
-            counter = msg.content.value;
-            last_wakeup = xtimer_now();
-            while(counter!=0){
-                RED_LED_TOGGLE;
-                xtimer_periodic_wakeup(&last_wakeup, RED_LED_PERIOD);
-                RED_LED_TOGGLE;
-                xtimer_periodic_wakeup(&last_wakeup, RED_LED_PERIOD);
-                counter--;
-            }
-        }
-    }
-    return NULL;
-}
-
-/* TODO: */
-/* green led thread */
-/* user button callback drukowanie ile czasu minęło */
-/* globalna zmienna drukowana w pierwszym wątku */
-/* red thread receiving message */
-/* jakos rozdzielic mainy tak, żeby kolejne częsci mozna było zaczynać niezależnie */
-
-int main(void)
-{
-    kernel_pid_t red_pid = thread_create(red_thread_stack, sizeof(red_thread_stack),
-                            THREAD_PRIORITY_MAIN - 2, THREAD_CREATE_STACKTEST,
-                            thread_blinking_red, NULL, "red");
-
-    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&red_pid);
-     
+void *thread_blinking_green(void* arg){
     xtimer_ticks32_t last_wakeup = xtimer_now();
     GREEN_LED_ON;
     while(1){
         GREEN_LED_TOGGLE;
         xtimer_periodic_wakeup(&last_wakeup, GREEN_LED_PERIOD);
-    }
+    }    
+}
 
-    /*if code get here, red_pid won't be passed to user_button_callback */
+int main(void)
+{
+    kernel_pid_t green_pid = thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
+                            THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
+                            thread_blinking_green, NULL, "green");
+
+    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*) 0);
+
+    /* jeśli wykonanie kodu dotrze do tego miejsca,
+    zmienne zdefiniowane w main() przestaną być dostępne */
     return 0;
 }
