@@ -57,14 +57,16 @@ char stack_thread_red[THREAD_STACKSIZE_MAIN];
 kernel_pid_t red_pid;
 
 void *thread_red(void* arg){
-     while(1){
+    (void)arg;
+    msg_t msg;
+    while(1){
         msg_receive(&msg);
         unsigned time = msg.content.value;
         DEBUG("User button pressed time[us]: %d\n", time);
     }
-}
 
-static unsigned user_button_pressed_time = 0;
+    return NULL;
+}
 
 static void user_button_callback(void *arg){
     static unsigned button_pressed = 0;
@@ -86,8 +88,7 @@ static void user_button_callback(void *arg){
 char stack_thread_blinking_green[THREAD_STACKSIZE_MAIN];
 
 void *thread_blinking_green(void* arg){
-    unsigned* pressed_time = (unsigned*)arg;
-    unsigned last_pressed_time = 0;
+    (void)arg;
     xtimer_ticks32_t last_wakeup = xtimer_now();
     GREEN_LED_ON;
     while(1){
@@ -98,15 +99,15 @@ void *thread_blinking_green(void* arg){
 
 int main(void)
 {
-    kernel_pid_t green_pid = thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
+    thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
                             THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
-                            thread_blinking_green, (void*)&user_button_pressed_time, "green");
+                            thread_blinking_green, (void*)0, "green");
 
     red_pid = thread_create(stack_thread_red, sizeof(stack_thread_red),
                             THREAD_PRIORITY_MAIN - 2, THREAD_CREATE_STACKTEST,
                             thread_red, (void*)&red_pid, "red");
 
-    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&user_button_pressed_time);
+    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&red_pid);
 
     /* jeśli wykonanie kodu dotrze do tego miejsca,
     zmienne zdefiniowane w main() przestaną być dostępne */

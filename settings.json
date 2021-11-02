@@ -1,0 +1,5 @@
+{
+    "terminal.integrated.env.linux": {
+        "PATH": "...:/usr/local/gcc_arm/gcc-arm-none-eabi/bin/:..."
+      }
+}

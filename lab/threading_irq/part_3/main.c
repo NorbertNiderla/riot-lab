@@ -67,7 +67,8 @@ static void user_button_callback(void *arg){
         button_pressed = 1;
     } else {
         stop = xtimer_now();
-        DEBUG("User button being pressed down time[us]: %d\n", xtimer_diff(stop, start).ticks32);
+        /*zmodyfikuj zapisywanie czasu przycisniecia przycisku */
+        DEBUG("User button being pressed down time[us]: %ld\n", xtimer_diff(stop, start).ticks32);
         button_pressed = 0;
     }
 }
@@ -75,21 +76,27 @@ static void user_button_callback(void *arg){
 char stack_thread_blinking_green[THREAD_STACKSIZE_MAIN];
 
 void *thread_blinking_green(void* arg){
+    (void)arg;
+
+    /* napisz drukowanie czasu przycisniecia przycisku w tym watku */
+
     xtimer_ticks32_t last_wakeup = xtimer_now();
     GREEN_LED_ON;
     while(1){
         GREEN_LED_TOGGLE;
         xtimer_periodic_wakeup(&last_wakeup, GREEN_LED_PERIOD);
     }    
+
+    return NULL;
 }
 
 int main(void)
 {
-    kernel_pid_t green_pid = thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
+    thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
                             THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
                             thread_blinking_green, NULL, "green");
 
-    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*) 0);
+    gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)0);
 
     /* jeśli wykonanie kodu dotrze do tego miejsca,
     zmienne zdefiniowane w main() przestaną być dostępne */

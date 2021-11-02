@@ -54,6 +54,7 @@
 #define BLUE_LED_PERIOD     (250000)
 
 static void user_button_callback(void *arg){
+    (void)arg;
     /* tutaj napisz obsługę przerwania */
     /* funkcje: xtimer_now, xtimer_diff, DEBUG lub printf */
     /* struktury: xtimer_ticks32_t */
@@ -69,6 +70,8 @@ void *thread_blinking_green(void* arg){
         GREEN_LED_TOGGLE;
         xtimer_periodic_wakeup(&last_wakeup, GREEN_LED_PERIOD);
     }    
+    
+    return NULL;
 }
 
 int main(void)

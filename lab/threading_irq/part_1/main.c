@@ -56,9 +56,12 @@
 char stack_thread_blinking_green[THREAD_STACKSIZE_MAIN];
 
 void *thread_blinking_green(void* arg){
+    (void)arg;
     /* tutaj napisz kod, który będzie powodował miganie zieloną diodą na płytce */
     /* funkcje: xtimer_now, xtimer_periodic_wakeup */
-    /* struktury: xtimer_ticks32_t */     
+    /* struktury: xtimer_ticks32_t */ 
+
+    return NULL;    
 }
 
 int main(void)

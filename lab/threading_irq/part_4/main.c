@@ -54,13 +54,15 @@
 #define BLUE_LED_PERIOD     (250000)
 
 char stack_thread_led[THREAD_STACKSIZE_MAIN];
-kernel_pid_t red_pid;
 
 void *thread_red(void* arg){
+    (void)arg;
     /* tutaj napisz działanie wątku odbierającego wiadomości
     o czasie przytrzymania przycisku */
     /* funkcje: msg_receive */
     /* struktury: msg_t */
+
+    return NULL;
 }
 
 static unsigned user_button_pressed_time = 0;
@@ -106,13 +108,16 @@ void *thread_blinking_green(void* arg){
 
 int main(void)
 {
-    kernel_pid_t green_pid = thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
+    thread_create(stack_thread_blinking_green, sizeof(stack_thread_blinking_green),
                             THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
                             thread_blinking_green, (void*)&user_button_pressed_time, "green");
 
-    /* tutaj napisz uruchomienie czerwonego wątku i przekazanie pid do obsługi przerwania */
+    /* tutaj napisz uruchomienie czerwonego wątku, przekaż pid tego wątku do user_button_callback
+    poprzez callback argument lub zmienną globalną*/
 
+    /* zmodyfikuj callback w przerwaniu generowanym przez przycisk */
     gpio_init_int(USER_BUTTON, GPIO_IN_PU, GPIO_BOTH, user_button_callback, (void*)&user_button_pressed_time);
+
 
     /* jeśli wykonanie kodu dotrze do tego miejsca,
     zmienne zdefiniowane w main() przestaną być dostępne */
