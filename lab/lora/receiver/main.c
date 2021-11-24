@@ -106,8 +106,9 @@ int main(void)
     sender_pid = thread_create(sender_stack, sizeof(sender_stack),
                                SENDER_PRIO, 0, sender, NULL, "sender");
 
-    /* trigger the first send */
-    msg_t msg;
-    msg_send(&msg, sender_pid);
+    char init_msg[] = "init_message";
+    uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
+    if (ret != SEMTECH_LORAMAC_TX_DONE)  {
+        printf("Cannot send message '%s', ret code: %d\n", message, ret);
     return 0;
 }
