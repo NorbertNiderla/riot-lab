@@ -33,7 +33,7 @@
 
 #define SENDER_PRIO         (THREAD_PRIORITY_MAIN - 1)
 static kernel_pid_t sender_pid;
-static char sender_stack[THREAD_STACKSIZE_MAIN / 2];
+static char receiver_stack[THREAD_STACKSIZE_MAIN / 2];
 
 static semtech_loramac_t loramac;
 static sx127x_t sx127x;
@@ -44,9 +44,9 @@ static uint8_t appkey[LORAMAC_APPKEY_LEN];
 
 static void _receive_message(void)
 {
-    /* Try to send the message */
     uint8_t ret = semtech_loramac_recv(&loramac);
     if (ret == SEMTECH_LORAWAN_RX_DATA)  {
+        loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
         printf("Received: %s\n", loramac.rx_data.payload);
         return;
     } else if(ret == SEMTECH_LORAWAN_RX_LINK_CHECK){
@@ -102,13 +102,14 @@ int main(void)
     }
     puts("Join procedure succeeded");
 
-    /* start the sender thread */
-    sender_pid = thread_create(sender_stack, sizeof(sender_stack),
-                               SENDER_PRIO, 0, sender, NULL, "sender");
-
     char init_msg[] = "init_message";
     uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
     if (ret != SEMTECH_LORAMAC_TX_DONE)  {
         printf("Cannot send message '%s', ret code: %d\n", message, ret);
+    printf("init message sent\n");
+
+    /* start the receiver thread */
+    sender_pid = thread_create(receiver_stack, sizeof(receiver_stack),
+                               SENDER_PRIO, 0, receiver, NULL, "sender");
     return 0;
 }
