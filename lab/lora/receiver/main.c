@@ -42,13 +42,13 @@ static uint8_t appkey[LORAMAC_APPKEY_LEN];
 static void _receive_message(void)
 {
     uint8_t ret = semtech_loramac_recv(&loramac);
-    if (ret == SEMTECH_LORAWAN_RX_DATA)  {
+    if (ret == 9)  {
         loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
         printf("Received: %s\n", loramac.rx_data.payload);
         return;
-    } else if(ret == SEMTECH_LORAWAN_RX_LINK_CHECK){
+    } else if(ret == 10){
         return;
-    } else if(ret == SEMTECH_LORAWAN_RX_CONFIRMED){
+    } else if(ret == 11){
         return;
     } else {
         printf("Receive error\n");
