@@ -28,10 +28,7 @@
 #include "sx127x_netdev.h"
 #include "sx127x_params.h"
 
-/* Messages are sent every 20s to respect the duty cycle on each channel */
-#define PERIOD              (20U)
-
-#define SENDER_PRIO         (THREAD_PRIORITY_MAIN - 1)
+#define RECEIVER_PRIO         (THREAD_PRIORITY_MAIN - 1)
 static kernel_pid_t sender_pid;
 static char receiver_stack[THREAD_STACKSIZE_MAIN / 2];
 
@@ -110,6 +107,6 @@ int main(void)
 
     /* start the receiver thread */
     sender_pid = thread_create(receiver_stack, sizeof(receiver_stack),
-                               SENDER_PRIO, 0, receiver, NULL, "sender");
+                               RECEIVER_PRIO, 0, receiver, NULL, "receiver");
     return 0;
 }
