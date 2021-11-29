@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = lorawan
+APPLICATION = sender
 
 # Use the ST B-L072Z-LRWAN1 board by default:
 BOARD ?= b-l072z-lrwan1

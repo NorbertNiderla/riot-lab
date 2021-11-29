@@ -28,6 +28,11 @@
 #include "sx127x_netdev.h"
 #include "sx127x_params.h"
 
+#define ENABLE_DEBUG    (1)
+#if ENABLE_DEBUG
+#include "debug.h"
+#endif
+
 #define RECEIVER_PRIO         (THREAD_PRIORITY_MAIN - 1)
 static kernel_pid_t sender_pid;
 static char receiver_stack[THREAD_STACKSIZE_MAIN / 2];
@@ -60,6 +65,7 @@ static void *receiver(void *arg)
 {
     (void)arg;
     while (1) {
+        DEBUG("*receiver loop\n");
         _receive_message();
     }
 

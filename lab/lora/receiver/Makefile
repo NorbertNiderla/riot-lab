@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = lorawan
+APPLICATION = receiver
 
 # Use the ST B-L072Z-LRWAN1 board by default:
 BOARD ?= b-l072z-lrwan1
@@ -7,9 +7,9 @@ BOARD ?= b-l072z-lrwan1
 # This has to be the absolute path to the RIOT base directory:
 RIOTBASE ?= $(CURDIR)/../../..
 
-DEVEUI ?= 00000000000000D2
-APPEUI ?= 00000000000000A1
-APPKEY ?= 00000000000000000000000000000000
+DEVEUI ?= "00000000000000D2"
+APPEUI ?= "00000000000000A1"
+APPKEY ?= "00000000000000000000000000000000"
 
 # Pass these enviroment variables to docker
 DOCKER_ENV_VARS += DEVEUI
