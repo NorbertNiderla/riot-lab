@@ -103,8 +103,11 @@ int main(void)
     uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
     while (ret != SEMTECH_LORAMAC_TX_DONE)  {
         printf("Cannot send message '%s', ret code: %d\n", message, ret);
-        printf("Retrying...\n")
+        printf("Retrying in 30sec....\n")
+        for(int i = 0; i < 30*32000000; i++)
+            __asm__("nop");
         ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
+        
     }
     printf("init message sent\n");
 
