@@ -101,8 +101,11 @@ int main(void)
 
     char init_msg[] = "init_message";
     uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
-    if (ret != SEMTECH_LORAMAC_TX_DONE)  {
+    while (ret != SEMTECH_LORAMAC_TX_DONE)  {
         printf("Cannot send message '%s', ret code: %d\n", message, ret);
+        printf("Retrying...\n")
+        ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
+    }
     printf("init message sent\n");
 
     /* start the receiver thread */
