@@ -93,7 +93,7 @@ int main(void)
 
     /* Use a fast datarate, e.g. BW125/SF7 in EU868 */
     semtech_loramac_set_dr(&loramac, LORAMAC_DR_5);
-    void semtech_loramac_set_rx2_freq(&loramac, 869525000)
+    semtech_loramac_set_rx2_freq(&loramac, 869525000);
 
     /* Start the Over-The-Air Activation (OTAA) procedure to retrieve the
      * generated device address and to get the network and application session
