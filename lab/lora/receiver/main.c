@@ -44,29 +44,23 @@ static uint8_t deveui[LORAMAC_DEVEUI_LEN];
 static uint8_t appeui[LORAMAC_APPEUI_LEN];
 static uint8_t appkey[LORAMAC_APPKEY_LEN];
 
-static void _receive_message(void)
-{
-    uint8_t ret = semtech_loramac_recv(&loramac);
-    if (ret == 9)  {
-        loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
-        printf("Received: %s\n", loramac.rx_data.payload);
-        return;
-    } else if(ret == 10){
-        return;
-    } else if(ret == 11){
-        return;
-    } else {
-        printf("Receive error\n");
-        return;
-    }
-}
+#define RECV_MSG_QUEUE                   (4U)
+static msg_t _recv_queue[RECV_MSG_QUEUE];
 
 static void *receiver(void *arg)
 {
     (void)arg;
+    msg_init_queue(_recv_queue, RECV_MSG_QUEUE);
+
     while (1) {
         DEBUG("*receiver loop\n");
-        _receive_message();
+        uint8_t ret = semtech_loramac_recv(&loramac);
+        if (ret == SEMTECH_LORAMAC_RX_DATA)  {
+            loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
+            printf("Received: %s\n", loramac.rx_data.payload);
+        } else {
+            printf("Receive error\n");
+        }
     }
 
     /* this should never be reached */
@@ -121,5 +115,20 @@ int main(void)
     /* start the receiver thread */
     sender_pid = thread_create(receiver_stack, sizeof(receiver_stack),
                                RECEIVER_PRIO, 0, receiver, NULL, "receiver");
+
+    char keep_alive_message[] = "keep alive";
+    while(1){
+        uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)keep_alive_message, strlen(keep_alive_message));
+        if(ret != SEMTECH_LORAMAC_TX_OK){
+            printf("keep alive not sent\n");
+        } else {
+            printf("keep alive sent\n");
+        }
+        for(int i = 0; i < 32000000*2; i++)
+            __asm__("nop");
+    }
+
+
+    
     return 0;
 }
