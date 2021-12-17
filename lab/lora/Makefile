@@ -28,6 +28,7 @@ USEPKG += semtech-loramac
 USEMODULE += $(DRIVER)
 USEMODULE += fmt
 USEMODULE += semtech_loramac_rx
+USEMODULE += xtimer
 FEATURES_REQUIRED += periph_rtc
 
 # Comment this out to disable code in RIOT that does safety checking

@@ -18,6 +18,7 @@
 #include "msg.h"
 #include "thread.h"
 #include "fmt.h"
+#include "xtimer.h"
 
 #include "periph/rtc.h"
 
@@ -56,9 +57,11 @@ static void *receiver(void *arg)
         uint8_t ret = semtech_loramac_recv(&loramac);
         if (ret == SEMTECH_LORAMAC_RX_DATA)  {
             loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
-            printf("Received: %s\n", loramac.rx_data.payload);
+            DEBUG("Received: %s\n", loramac.rx_data.payload);
+        } else if( ret == SEMTECH_LORAMAC_RX_CONFIRMED){
+            DEBUG("Received ack\n");
         } else {
-            printf("Nothing to receive or error: ret:%d\n", ret);
+            DEBUG("Nothing to receive or error: ret:%d\n", ret);
         }
     }
 
@@ -92,24 +95,13 @@ int main(void)
      * generated device address and to get the network and application session
      * keys.
      */
-    puts("Starting join procedure");
-    if (semtech_loramac_join(&loramac, LORAMAC_JOIN_OTAA) != SEMTECH_LORAMAC_JOIN_SUCCEEDED) {
-        puts("Join procedure failed");
-        return 1;
+    DEBUG("Starting join procedure");
+    while(semtech_loramac_join(&loramac, LORAMAC_JOIN_OTAA) != SEMTECH_LORAMAC_JOIN_SUCCEEDED) {
+        DEBUG("Join procedure failed, retrying in 30s\n");
+        xtimer_ticks32 last_wakeup = xtimer_now();
+        xtimer_periodic_wakeup(&last_wakeup, 30000000);
     }
-    puts("Join procedure succeeded");
-
-    char init_msg[] = "init_message";
-    uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
-    while (ret != SEMTECH_LORAMAC_TX_DONE)  {
-        printf("Cannot send message '%s', ret code: %d\n", init_msg, ret);
-        printf("Retrying...\n");
-        for(int i = 0; i < 32000000; i++)
-            __asm__("nop");
-        ret = semtech_loramac_send(&loramac, (uint8_t *)init_msg, strlen(init_msg));
-        
-    }
-    printf("init message sent\n");
+    DEBUG("Join procedure succeeded");
 
     /* start the receiver thread */
     sender_pid = thread_create(receiver_stack, sizeof(receiver_stack),
@@ -118,13 +110,16 @@ int main(void)
     char keep_alive_message[] = "keep alive";
     while(1){
         uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)keep_alive_message, strlen(keep_alive_message));
-        if(ret == SEMTECH_LORAMAC_TX_OK){
-            printf("message '%s' sent\n", keep_alive_message);
+        if(ret == SEMTECH_LORAMAC_TX_DONE){
+            DEBUG("message '%s' sent\n", keep_alive_message);
+        } else if(ret == SEMTECH_LORAMAC_DUTYCYCLE_RESTRICTED) {
+            DEBUG("sending error: duty cycle restricted\n");
         } else {
-            printf("sending error: ret:%d, retrying...\n", ret);
+            DEBUG("sending error: ret:%d\n", ret);
         }
-        for(int i = 0; i < 32000000*2; i++)
-            __asm__("nop");
+        
+        xtimer_ticks32 last_wakeup = xtimer_now();
+        xtimer_periodic_wakeup(&last_wakeup, 90000000);
     }
 
 

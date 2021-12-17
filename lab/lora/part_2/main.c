@@ -47,6 +47,16 @@ static uint8_t appkey[LORAMAC_APPKEY_LEN];
 #define RECV_MSG_QUEUE                   (4U)
 static msg_t _recv_queue[RECV_MSG_QUEUE];
 
+static void *receiver(void *arg)
+{
+    (void)arg;
+    msg_init_queue(_recv_queue, RECV_MSG_QUEUE);
+    
+    /* tutaj napisz pętle odbierającą wiadomości */
+    /* semtech_loramac_recv() */
+
+    return;
+}
 int main(void)
 {
     /* Convert identifiers and application key */
@@ -81,13 +91,19 @@ int main(void)
     }
     DEBUG("Join procedure succeeded\n");
 
+    /* start the receiver thread */
+    sender_pid = thread_create(receiver_stack, sizeof(receiver_stack),
+                               RECEIVER_PRIO, 0, receiver, NULL, "receiver");
+
     char keep_alive_message[] = "keep alive";
     while(1){
         uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)keep_alive_message, strlen(keep_alive_message));
-        if(ret != SEMTECH_LORAMAC_TX_OK){
-            DEBUG("keep alive not sent\n");
+        if(ret == SEMTECH_LORAMAC_TX_DONE){
+            DEBUG("message '%s' sent\n", keep_alive_message);
+        } else if(ret == SEMTECH_LORAMAC_DUTYCYCLE_RESTRICTED) {
+            DEBUG("sending error: duty cycle restricted\n");
         } else {
-            DEBUG("keep alive sent\n");
+            DEBUG("sending error: ret:%d\n", ret);
         }
 
         xtimer_ticks32 last_wakeup = xtimer_now();
