@@ -58,7 +58,7 @@ static void *receiver(void *arg)
             loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
             printf("Received: %s\n", loramac.rx_data.payload);
         } else {
-            printf("Nothing to receive or error\n");
+            printf("Nothing to receive or error: ret:%d\n", ret);
         }
     }
 
@@ -121,7 +121,7 @@ int main(void)
         if(ret == SEMTECH_LORAMAC_TX_OK){
             printf("message '%s' sent\n", keep_alive_message);
         } else {
-            printf("sending error, retrying...\n");
+            printf("sending error: ret:%d, retrying...\n", ret);
         }
         for(int i = 0; i < 32000000*2; i++)
             __asm__("nop");
