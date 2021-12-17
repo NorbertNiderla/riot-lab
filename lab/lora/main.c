@@ -59,7 +59,7 @@ static void *receiver(void *arg)
             loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
             printf("Received: %s\n", loramac.rx_data.payload);
         } else {
-            printf("Receive error\n");
+            printf("Nothing to receive or error\n");
         }
     }
 
@@ -120,7 +120,7 @@ int main(void)
     while(1){
         uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)keep_alive_message, strlen(keep_alive_message));
         if(ret != SEMTECH_LORAMAC_TX_OK){
-            printf("keep alive not sent\n");
+            printf("keep alive sending error, retrying...\n");
         } else {
             printf("keep alive sent\n");
         }

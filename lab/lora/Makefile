@@ -5,7 +5,7 @@ APPLICATION = receiver
 BOARD ?= b-l072z-lrwan1
 
 # This has to be the absolute path to the RIOT base directory:
-RIOTBASE ?= $(CURDIR)/../../..
+RIOTBASE ?= $(CURDIR)/../..
 
 DEVEUI ?= "00000000000000D2"
 APPEUI ?= "00000000000000A1"
