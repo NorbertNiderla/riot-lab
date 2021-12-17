@@ -53,7 +53,6 @@ static void *receiver(void *arg)
     msg_init_queue(_recv_queue, RECV_MSG_QUEUE);
 
     while (1) {
-        DEBUG("*receiver loop\n");
         uint8_t ret = semtech_loramac_recv(&loramac);
         if (ret == SEMTECH_LORAMAC_RX_DATA)  {
             loramac.rx_data.payload[loramac.rx_data.payload_len] = 0;
@@ -119,10 +118,10 @@ int main(void)
     char keep_alive_message[] = "keep alive";
     while(1){
         uint8_t ret = semtech_loramac_send(&loramac, (uint8_t *)keep_alive_message, strlen(keep_alive_message));
-        if(ret != SEMTECH_LORAMAC_TX_OK){
-            printf("keep alive sending error, retrying...\n");
+        if(ret == SEMTECH_LORAMAC_TX_OK){
+            printf("message '%s' sent\n", keep_alive_message);
         } else {
-            printf("keep alive sent\n");
+            printf("sending error, retrying...\n");
         }
         for(int i = 0; i < 32000000*2; i++)
             __asm__("nop");
