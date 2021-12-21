@@ -95,7 +95,7 @@ int main(void)
      * generated device address and to get the network and application session
      * keys.
      */
-    DEBUG("Starting join procedure");
+    DEBUG("Starting join procedure\n");
     while(semtech_loramac_join(&loramac, LORAMAC_JOIN_OTAA) != SEMTECH_LORAMAC_JOIN_SUCCEEDED) {
         DEBUG("Join procedure failed, retrying in 30s\n");
         xtimer_ticks32_t last_wakeup = xtimer_now();
@@ -119,7 +119,7 @@ int main(void)
         }
         
         xtimer_ticks32_t last_wakeup = xtimer_now();
-        xtimer_periodic_wakeup(&last_wakeup, 90000000);
+        xtimer_periodic_wakeup(&last_wakeup, 30000000);
     }
 
 
