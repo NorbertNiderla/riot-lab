@@ -101,7 +101,7 @@ int main(void)
         xtimer_ticks32_t last_wakeup = xtimer_now();
         xtimer_periodic_wakeup(&last_wakeup, 30000000);
     }
-    DEBUG("Join procedure succeeded");
+    DEBUG("Join procedure succeeded\n");
 
     /* start the receiver thread */
     sender_pid = thread_create(receiver_stack, sizeof(receiver_stack),
