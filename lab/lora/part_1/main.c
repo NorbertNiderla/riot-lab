@@ -72,7 +72,7 @@ int main(void)
     DEBUG("Starting join procedure\n");
     while (semtech_loramac_join(&loramac, LORAMAC_JOIN_OTAA) != SEMTECH_LORAMAC_JOIN_SUCCEEDED) {
         DEBUG("Join procedure failed, retrying in 30s\n");
-        xtimer_ticks32 last_wakeup = xtimer_now();
+        xtimer_ticks32_t last_wakeup = xtimer_now();
         xtimer_periodic_wakeup(&last_wakeup, 30000000);
     }
     DEBUG("Join procedure succeeded\n");
