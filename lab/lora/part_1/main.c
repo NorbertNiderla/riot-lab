@@ -36,8 +36,6 @@
 #endif
 
 #define RECEIVER_PRIO         (THREAD_PRIORITY_MAIN - 1)
-static kernel_pid_t sender_pid;
-static char receiver_stack[THREAD_STACKSIZE_MAIN / 2];
 
 static semtech_loramac_t loramac;
 static sx127x_t sx127x;
