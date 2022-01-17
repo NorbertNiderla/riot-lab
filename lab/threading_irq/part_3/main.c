@@ -34,6 +34,8 @@
 #include "debug.h"
 #endif
 
+#define MODULE_PERIPH_GPIO_IRQ
+
 /* button manipulation macro */
 #define USER_BUTTON       (BTN_B1_PIN)
 

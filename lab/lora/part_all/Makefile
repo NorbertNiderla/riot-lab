@@ -1,5 +1,5 @@
 # name of your application
-APPLICATION = receiver
+APPLICATION = lora_device
 
 # Use the ST B-L072Z-LRWAN1 board by default:
 BOARD ?= b-l072z-lrwan1

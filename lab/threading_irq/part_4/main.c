@@ -34,6 +34,8 @@
 #include "debug.h"
 #endif
 
+#define MODULE_PERIPH_GPIO_IRQ
+
 /* button manipulation macro */
 #define USER_BUTTON       (BTN_B1_PIN)
 
@@ -53,7 +55,7 @@
 #define GREEN_LED_PERIOD     (250000)
 #define BLUE_LED_PERIOD     (250000)
 
-char stack_thread_led[THREAD_STACKSIZE_MAIN];
+char stack_thread_red_led[THREAD_STACKSIZE_MAIN];
 
 void *thread_red(void* arg){
     (void)arg;

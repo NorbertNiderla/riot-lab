@@ -53,7 +53,7 @@
 #define GREEN_LED_PERIOD     (250000)
 #define BLUE_LED_PERIOD     (250000)
 
-char stack_thread_red[THREAD_STACKSIZE_MAIN];
+char stack_thread_red_led[THREAD_STACKSIZE_MAIN];
 kernel_pid_t red_pid;
 
 void *thread_red(void* arg){
@@ -103,7 +103,7 @@ int main(void)
                             THREAD_PRIORITY_MAIN - 1, THREAD_CREATE_STACKTEST,
                             thread_blinking_green, (void*)0, "green");
 
-    red_pid = thread_create(stack_thread_red, sizeof(stack_thread_red),
+    red_pid = thread_create(stack_thread_red_led, sizeof(stack_thread_red_led),
                             THREAD_PRIORITY_MAIN - 2, THREAD_CREATE_STACKTEST,
                             thread_red, (void*)&red_pid, "red");
 
