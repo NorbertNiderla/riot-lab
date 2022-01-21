@@ -3,6 +3,8 @@
         "gpio.h": "c",
         "thread.h": "c",
         "xtimer.h": "c",
-        "msg.h": "c"
+        "msg.h": "c",
+        "type_traits": "cpp",
+        "semtech_loramac.h": "c"
     }
 }
