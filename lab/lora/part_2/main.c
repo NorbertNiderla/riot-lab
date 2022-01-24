@@ -106,7 +106,7 @@ int main(void)
             DEBUG("sending error: ret:%d\n", ret);
         }
 
-        xtimer_ticks32 last_wakeup = xtimer_now();
+        xtimer_ticks32_t last_wakeup = xtimer_now();
         xtimer_periodic_wakeup(&last_wakeup, 90000000);
     }
 
